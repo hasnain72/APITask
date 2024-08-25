@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using UserApi.Data;  // Ensure this using directive is included
 using UserApi.Models;
+using UserApi.Utilities;
 
 namespace UserApi.Controllers
 {

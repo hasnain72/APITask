@@ -1,33 +1,33 @@
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
-public static class JwtUtils
+namespace UserApi.Utilities
 {
-    private const string SecretKey = "testNOWTask";
-
-    public static string GenerateJwtToken(string username, long userId)
+    public static class JwtUtils
     {
-        var claims = new[]
+        private static readonly string SecretKey = "8b6e94c6b3c3a16b1a92b86f90f22a7d5943d1b1b0b0e9d5f4b6e7c8d8e8a4d8"; // 32-byte hex encoded key
+
+        public static string GenerateJwtToken(string username, long userId)
         {
-            new Claim(JwtRegisteredClaimNames.Sub, username),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-            new Claim("userId", userId.ToString())
-        };
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(SecretKey);
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, username),
+                    new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
 
-        var token = new JwtSecurityToken(
-            issuer: null,
-            audience: null,
-            claims: claims,
-            expires: DateTime.Now.AddMinutes(30),
-            signingCredentials: creds);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
     }
 }
